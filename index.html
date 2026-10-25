@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>赵旭 — Forward Deployed Engineer / 把 LLM 与数据系统落到客户生产环境</title>
+<meta name="description" content="赵旭，青岛大学 2027 届。把 LLM 与数据系统落到客户生产环境：现场诊断、数据接入、Agent 编排、评测闸门、可观测与回滚。">
+<meta name="theme-color" content="#08090b">
+<meta property="og:type" content="profile">
+<meta property="og:title" content="赵旭 — Forward Deployed Engineer">
+<meta property="og:description" content="交付物不是能跑的 demo，而是可评测、可观测、可回滚、可迭代的系统。">
+<meta property="og:locale" content="zh_CN">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2308090b'/%3E%3Cpath d='M8 22V10h4l8 12V10' stroke='%233ddc97' stroke-width='2.2' fill='none' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"Person",
+  "name":"赵旭",
+  "alternateName":"Zhao Xu",
+  "jobTitle":"Forward Deployed Engineer",
+  "description":"把 LLM 与数据系统落到客户生产环境的工程师。擅长现场诊断、业务翻译、Agent 编排与 LLM 评测体系。",
+  "alumniOf":{"@type":"CollegeOrUniversity","name":"青岛大学"},
+  "knowsAbout":["LLM 应用工程","RAG","Agent 编排","LLM 评测体系","数据接入","现场诊断","可观测性"],
+  "sameAs":["https://github.com/z15346183030"]
+}
+</script>
+<noscript><style>.rv{opacity:1!important;transform:none!important}.term-body .ln{opacity:1!important}.out .row,.hit{opacity:1!important}</style></noscript>
+<style>
+/* ============================================================
+   TOKENS
+   ============================================================ */
+:root{
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", "Roboto Mono", Consolas, "Liberation Mono", monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+
+  --bg:#08090b;
+  --bg-grid:rgba(255,255,255,.022);
+  --panel:#0d0f13;
+  --panel-2:#12151a;
+  --panel-3:#171b21;
+  --line:#1c2027;
+  --line-2:#282e37;
+  --text:#e7eaee;
+  --muted:#8b939e;
+  --faint:#5a626d;
+  --accent:#3ddc97;
+  --accent-dim:rgba(61,220,151,.13);
+  --accent-line:rgba(61,220,151,.32);
+  --warn:#f5b544;
+  --warn-dim:rgba(245,181,68,.12);
+  --info:#6aa6ff;
+  --info-dim:rgba(106,166,255,.12);
+  --shadow:0 18px 50px -20px rgba(0,0,0,.85);
+}
+html[data-theme="light"]{
+  --bg:#fafaf7;
+  --bg-grid:rgba(0,0,0,.028);
+  --panel:#ffffff;
+  --panel-2:#f5f5f0;
+  --panel-3:#eeeeE8;
+  --line:#e2e2da;
+  --line-2:#cfcfc5;
+  --text:#14171b;
+  --muted:#5d6470;
+  --faint:#8a919c;
+  --accent:#0e9660;
+  --accent-dim:rgba(14,150,96,.10);
+  --accent-line:rgba(14,150,96,.28);
+  --warn:#a86c06;
+  --warn-dim:rgba(168,108,6,.10);
+  --info:#2563d6;
+  --info-dim:rgba(37,99,214,.09);
+  --shadow:0 16px 44px -24px rgba(20,30,40,.35);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:var(--sans);font-size:15px;line-height:1.72;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--bg-grid) 1px,transparent 1px),linear-gradient(90deg,var(--bg-grid) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 20%,transparent 78%);
+  -webkit-mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 20%,transparent 78%);
+}
+img,svg{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+::selection{background:var(--accent-dim);color:var(--text)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+
+.mono{font-family:var(--mono);font-variant-ligatures:none}
+
+/* ============================================================
+   PROGRESS + TOPBAR
+   ============================================================ */
+#progress{
+  position:fixed;top:0;left:0;height:2px;width:0;z-index:120;
+  background:linear-gradient(90deg,var(--accent),var(--info));
+  transition:width .1s linear;
+}
+.topbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;gap:18px;
+  padding:0 clamp(16px,4vw,40px);height:58px;
+  background:color-mix(in srgb,var(--bg) 78%,transparent);
+  backdrop-filter:blur(14px) saturate(1.4);
+  -webkit-backdrop-filter:blur(14px) saturate(1.4);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.brand .mark{
+  font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.06em;
+  color:var(--accent);border:1px solid var(--accent-line);background:var(--accent-dim);
+  padding:3px 7px;border-radius:5px;
+}
+.brand .txt{font-size:13.5px;font-weight:600;letter-spacing:.01em;white-space:nowrap}
+.brand .txt em{font-family:var(--mono);font-style:normal;font-size:9.5px;color:var(--faint);margin-left:10px;letter-spacing:.09em;font-weight:400}
+.topnav{display:flex;gap:2px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.topnav::-webkit-scrollbar{display:none}
+.topnav a{
+  font-family:var(--mono);font-size:11.5px;color:var(--muted);
+  padding:6px 11px;border-radius:6px;white-space:nowrap;
+  transition:color .16s,background .16s;
+}
+.topnav a:hover{color:var(--text);background:var(--panel-2)}
+.topnav a.active{color:var(--accent);background:var(--accent-dim)}
+.icon-btn{
+  flex:0 0 auto;width:32px;height:32px;display:grid;place-items:center;
+  border:1px solid var(--line-2);border-radius:7px;background:var(--panel);
+  color:var(--muted);transition:.16s;
+}
+.icon-btn:hover{color:var(--text);border-color:var(--faint)}
+.icon-btn svg{width:15px;height:15px}
+html[data-theme="dark"] .i-sun{display:none}
+html[data-theme="light"] .i-moon{display:none}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+main{position:relative;z-index:1}
+.wrap{max-width:1120px;margin:0 auto;padding:0 clamp(16px,4vw,40px)}
+section{padding:clamp(56px,8vw,96px) 0;scroll-margin-top:58px}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:34px}
+.sec-num{
+  font-family:var(--mono);font-size:11px;color:var(--faint);
+  letter-spacing:.14em;padding-top:6px;
+}
+.sec-title{font-size:clamp(23px,3.1vw,31px);font-weight:650;letter-spacing:-.015em;line-height:1.2;margin:0}
+.sec-sub{
+  font-family:var(--mono);font-size:11.5px;color:var(--faint);
+  letter-spacing:.02em;margin-left:auto;text-align:right;max-width:44%;line-height:1.6;
+}
+.sec-rule{display:none}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{padding-top:clamp(38px,5vw,60px);padding-bottom:clamp(16px,2.5vw,28px)}
+.statusline{
+  display:flex;flex-wrap:wrap;align-items:center;
+  font-family:var(--mono);font-size:11px;letter-spacing:.03em;
+  color:var(--faint);margin-bottom:24px;
+}
+.statusline b{color:var(--muted);font-weight:500;margin-left:7px}
+.statusline .sep{opacity:.3;margin:0 12px}
+.statusline .live{margin-right:0}
+.live{display:inline-flex;align-items:center;gap:6px;color:var(--accent)}
+.live i{
+  width:6px;height:6px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 0 0 var(--accent);animation:pulse 2.4s infinite;
+}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(61,220,151,.5)}
+  70%{box-shadow:0 0 0 7px rgba(61,220,151,0)}
+  100%{box-shadow:0 0 0 0 rgba(61,220,151,0)}
+}
+
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(28px,4vw,56px);align-items:start}
+h1.hero-title{
+  font-size:clamp(29px,4.15vw,44px);line-height:1.28;letter-spacing:-.022em;
+  font-weight:600;margin:0 0 20px;max-width:15em;
+}
+h1.hero-title .dim{color:var(--muted)}
+h1.hero-title .hl{color:var(--accent)}
+.hero-lead{color:var(--muted);font-size:15px;line-height:1.82;margin:0 0 18px;max-width:52ch}
+.hero-lead b{color:var(--text);font-weight:600}
+.principles{display:flex;flex-wrap:wrap;gap:8px;margin:26px 0 0}
+.principles span{
+  font-family:var(--mono);font-size:11px;letter-spacing:.02em;
+  padding:5px 10px;border-radius:5px;
+  border:1px solid var(--line-2);background:var(--panel);
+  color:var(--muted);
+}
+.principles span.on{border-color:var(--accent-line);background:var(--accent-dim);color:var(--accent)}
+
+/* terminal */
+.term{
+  border:1px solid var(--line-2);border-radius:11px;background:var(--panel);
+  box-shadow:var(--shadow);overflow:hidden;
+}
+.term-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 13px;border-bottom:1px solid var(--line);
+  background:var(--panel-2);
+}
+.term-bar .dots{display:flex;gap:5px}
+.term-bar .dots i{width:8px;height:8px;border-radius:50%;background:var(--line-2)}
+.term-bar .dots i:nth-child(1){background:#ff5f57}
+.term-bar .dots i:nth-child(2){background:#febc2e}
+.term-bar .dots i:nth-child(3){background:#28c840}
+.term-bar .tt{
+  font-family:var(--mono);font-size:10.5px;color:var(--faint);
+  letter-spacing:.03em;margin-left:4px;
+}
+.term-body{
+  padding:15px 16px 17px;font-family:var(--mono);font-size:11.5px;
+  line-height:2.05;overflow-x:auto;
+}
+.term-body .ln{
+  display:block;white-space:nowrap;
+  opacity:1;
+  animation:lnIn .34s cubic-bezier(.2,.7,.3,1) backwards;
+}
+.term-body .ln:nth-child(1){animation-delay:.15s}
+.term-body .ln:nth-child(2){animation-delay:.45s}
+.term-body .ln:nth-child(3){animation-delay:.75s}
+.term-body .ln:nth-child(4){animation-delay:1.05s}
+.term-body .ln:nth-child(5){animation-delay:1.35s}
+.term-body .ln:nth-child(6){animation-delay:1.65s}
+.term-body .ln:nth-child(7){animation-delay:1.95s}
+.term-body .ln:nth-child(8){animation-delay:2.25s}
+@keyframes lnIn{to{opacity:1;transform:translateY(0)}}
+.c-cmd{color:var(--text)}
+.c-ok{color:var(--accent)}
+.c-warn{color:var(--warn)}
+.c-dim{color:var(--faint)}
+.c-info{color:var(--info)}
+.c-tag{color:var(--muted)}
+.cursor{
+  display:inline-block;width:6px;height:12px;background:var(--accent);
+  vertical-align:-1px;animation:blink 1.1s steps(1) infinite;
+}
+@keyframes blink{50%{opacity:0}}
+
+html[data-theme="light"] .term{background:#0c0e12;border-color:#262c35}
+html[data-theme="light"] .term-bar{background:#12151a;border-bottom-color:#1c2027}
+html[data-theme="light"] .term-bar .tt{color:#5a626d}
+html[data-theme="light"] .term-body{color:#e7eaee}
+html[data-theme="light"] .c-cmd{color:#e7eaee}
+html[data-theme="light"] .c-dim{color:#6b7480}
+html[data-theme="light"] .c-ok{color:#3ddc97}
+html[data-theme="light"] .c-warn{color:#f5b544}
+html[data-theme="light"] .c-info{color:#6aa6ff}
+html[data-theme="light"] .c-tag{color:#9aa2ad}
+
+/* ============================================================
+   FIELD CASES
+   ============================================================ */
+.cases{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.case{
+  background:var(--panel);padding:clamp(20px,2.6vw,28px);
+  display:grid;grid-template-columns:158px 1fr;gap:clamp(16px,3vw,36px);
+  transition:background .18s;
+}
+.case:hover{background:var(--panel-2)}
+.case-l{display:flex;flex-direction:column;gap:6px}
+.case-id{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.1em}
+.case-org{font-size:13.5px;font-weight:620;line-height:1.4}
+.case-tag{
+  font-family:var(--mono);font-size:10px;color:var(--muted);
+  border:1px solid var(--line-2);border-radius:4px;padding:2px 6px;
+  align-self:flex-start;margin-top:2px;letter-spacing:.02em;
+}
+.case-r{display:flex;flex-direction:column;gap:11px;min-width:0}
+.crow{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:baseline}
+.crow .k{
+  font-family:var(--mono);font-size:10px;color:var(--faint);
+  letter-spacing:.07em;text-transform:uppercase;
+}
+.crow .v{font-size:14px;color:var(--muted);line-height:1.72;min-width:0}
+.crow .v b{color:var(--text);font-weight:600}
+.crow .v .q{color:var(--text);font-style:normal;font-weight:500}
+.case-why{
+  margin-top:2px;padding:10px 13px;border-left:2px solid var(--accent-line);
+  background:color-mix(in srgb,var(--accent) 5%,transparent);
+  border-radius:0 6px 6px 0;
+  font-size:13px;color:var(--muted);
+}
+.case-why b{color:var(--accent);font-weight:600}
+
+/* ============================================================
+   PIPELINE
+   ============================================================ */
+.pipe-svg-wrap{
+  border:1px solid var(--line);border-radius:10px;background:var(--panel);
+  padding:20px 16px 12px;margin-bottom:26px;overflow-x:auto;
+}
+.pipe-svg-wrap svg{min-width:760px;width:100%;height:auto}
+
+.chain{display:flex;flex-direction:column;gap:8px}
+.stage{
+  border:1px solid var(--line);border-radius:9px;background:var(--panel);
+  overflow:hidden;transition:border-color .18s,background .18s;
+}
+.stage[open]{border-color:var(--line-2);background:var(--panel-2)}
+.stage:hover{border-color:var(--line-2)}
+.stage summary{
+  display:flex;align-items:center;gap:13px;
+  padding:14px 16px;cursor:pointer;list-style:none;
+  font-size:14.5px;font-weight:560;
+}
+.stage summary::-webkit-details-marker{display:none}
+.stage summary::after{
+  content:"+";margin-left:auto;font-family:var(--mono);font-size:15px;
+  color:var(--faint);font-weight:400;transition:transform .2s;
+}
+.stage[open] summary::after{content:"−";color:var(--accent)}
+.stage .no{
+  font-family:var(--mono);font-size:10px;color:var(--faint);
+  letter-spacing:.06em;width:22px;flex:0 0 22px;
+}
+.stage .nm{flex:0 0 auto}
+.stage .en{
+  font-family:var(--mono);font-size:10.5px;color:var(--faint);
+  letter-spacing:.03em;
+}
+.stage .pill{
+  margin-left:auto;font-family:var(--mono);font-size:9.5px;
+  padding:2px 7px;border-radius:20px;letter-spacing:.04em;
+  border:1px solid var(--line-2);color:var(--faint);flex:0 0 auto;
+}
+.stage summary .pill{margin-left:auto}
+.stage summary::after{margin-left:14px}
+.pill.done{border-color:var(--accent-line);background:var(--accent-dim);color:var(--accent)}
+.pill.wip{border-color:rgba(245,181,68,.3);background:var(--warn-dim);color:var(--warn)}
+.pill.next{border-color:var(--line-2);background:var(--panel-3);color:var(--faint)}
+
+.stage-body{padding:0 16px 18px 51px;font-size:14px;color:var(--muted)}
+.stage-body .q-line{
+  font-size:13.5px;color:var(--text);line-height:1.75;
+  padding-bottom:12px;margin-bottom:12px;border-bottom:1px dashed var(--line-2);
+}
+.stage-body ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.stage-body li{position:relative;padding-left:16px;line-height:1.7}
+.stage-body li::before{
+  content:"";position:absolute;left:0;top:10px;
+  width:5px;height:1px;background:var(--faint);
+}
+.stage-body li b{color:var(--text);font-weight:600}
+.stage-body .pit{
+  margin-top:13px;padding:9px 12px;border-radius:6px;
+  background:var(--warn-dim);border:1px solid rgba(245,181,68,.22);
+  font-size:12.5px;color:var(--muted);
+}
+.stage-body .pit b{color:var(--warn);font-weight:600;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;margin-right:6px}
+
+/* ============================================================
+   CONSOLE
+   ============================================================ */
+.console{
+  border:1px solid var(--line-2);border-radius:12px;background:var(--panel);
+  box-shadow:var(--shadow);overflow:hidden;
+}
+.console-top{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:10px 14px;background:var(--panel-2);border-bottom:1px solid var(--line);
+}
+.console-top .ct{
+  font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.03em;
+}
+.console-top .ct b{color:var(--accent);font-weight:600}
+.tabs{display:flex;gap:3px;margin-left:auto;background:var(--panel-3);padding:3px;border-radius:7px}
+.tabs button{
+  border:0;background:transparent;color:var(--muted);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;
+  padding:5px 11px;border-radius:5px;transition:.16s;
+}
+.tabs button:hover{color:var(--text)}
+.tabs button.on{background:var(--panel);color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+
+.console-body{padding:18px 16px 20px;min-height:300px}
+.scen-bar{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.scen-bar button{
+  border:1px solid var(--line-2);background:var(--panel-2);color:var(--muted);
+  font-size:12.5px;padding:6px 12px;border-radius:6px;transition:.16s;
+}
+.scen-bar button:hover{color:var(--text);border-color:var(--faint)}
+.scen-bar button.on{
+  border-color:var(--accent-line);background:var(--accent-dim);color:var(--accent);
+}
+
+.out{font-family:var(--mono);font-size:11.5px;line-height:1.9}
+.out .row{
+  display:grid;grid-template-columns:82px 1fr;gap:12px;
+  padding:4px 0;border-bottom:1px solid var(--line);
+  opacity:1;
+  animation:rowIn .26s ease backwards;
+}
+.out .row:last-child{border-bottom:0}
+@keyframes rowIn{to{opacity:1;transform:translateY(0)}}
+.out .rk{
+  color:var(--muted);opacity:.72;font-size:10.5px;letter-spacing:.05em;padding-top:2px;
+}
+.out .rv{color:var(--muted);word-break:break-word}
+.out .rv b{color:var(--text);font-weight:600}
+.out .rv .hi{color:var(--accent)}
+.out .rv .wn{color:var(--warn)}
+.out .sep{
+  height:1px;background:var(--line-2);margin:9px 0;
+  opacity:1;animation:rowIn .26s ease backwards;
+}
+
+/* retrieve */
+.search-row{display:flex;gap:8px;margin-bottom:13px}
+.search-row input{
+  flex:1;min-width:0;
+  background:var(--panel-2);border:1px solid var(--line-2);border-radius:7px;
+  color:var(--text);font-family:var(--mono);font-size:12px;
+  padding:9px 12px;outline:none;transition:border-color .16s;
+}
+.search-row input::placeholder{color:var(--faint)}
+.search-row input:focus{border-color:var(--accent-line)}
+.search-row button{
+  border:1px solid var(--accent-line);background:var(--accent-dim);color:var(--accent);
+  border-radius:7px;padding:0 16px;font-family:var(--mono);font-size:11px;letter-spacing:.04em;
+  transition:.16s;
+}
+.search-row button:hover{background:var(--accent);color:var(--bg)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:15px}
+.chips button{
+  border:1px solid var(--line);background:transparent;color:var(--faint);
+  font-size:11.5px;padding:4px 10px;border-radius:20px;transition:.16s;
+}
+.chips button:hover{color:var(--muted);border-color:var(--line-2)}
+.hit{
+  padding:11px 0;border-bottom:1px solid var(--line);
+  opacity:1;animation:rowIn .3s ease backwards;
+}
+.hit:last-child{border-bottom:0}
+.hit-h{display:flex;align-items:baseline;gap:9px;margin-bottom:4px;flex-wrap:wrap}
+.hit-score{
+  font-family:var(--mono);font-size:10px;color:var(--accent);
+  background:var(--accent-dim);border:1px solid var(--accent-line);
+  padding:1px 6px;border-radius:4px;
+}
+.hit-src{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.02em}
+.hit-t{font-size:13px;color:var(--muted);line-height:1.7}
+.hit-t b{color:var(--text);font-weight:600}
+.empty{
+  font-family:var(--mono);font-size:11.5px;color:var(--faint);
+  padding:26px 0;text-align:center;
+}
+
+/* ============================================================
+   SYSTEMS
+   ============================================================ */
+.sys-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.sys{
+  border:1px solid var(--line);border-radius:10px;background:var(--panel);
+  padding:22px;display:flex;flex-direction:column;gap:0;
+  transition:border-color .2s,transform .2s;
+  position:relative;overflow:hidden;
+}
+.sys::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(320px circle at var(--mx,50%) var(--my,0%),var(--accent-dim),transparent 70%);
+  opacity:0;transition:opacity .25s;
+}
+.sys:hover{border-color:var(--line-2);transform:translateY(-2px)}
+.sys:hover::before{opacity:1}
+.sys-h{display:flex;align-items:flex-start;gap:10px;margin-bottom:4px}
+.sys-h h3{font-size:16px;font-weight:640;letter-spacing:-.01em;margin:0;line-height:1.4}
+.sys-h .arw{color:var(--faint);font-size:13px;margin-left:auto;padding-top:3px}
+.sys-meta{
+  font-family:var(--mono);font-size:10px;color:var(--faint);
+  letter-spacing:.03em;margin-bottom:14px;
+}
+.sys-rows{display:flex;flex-direction:column;gap:9px;flex:1}
+.sys-row{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:baseline}
+.sys-row .k{
+  font-family:var(--mono);font-size:9.5px;color:var(--faint);
+  letter-spacing:.07em;text-transform:uppercase;padding-top:1px;
+}
+.sys-row .v{font-size:13px;color:var(--muted);line-height:1.66}
+.sys-row .v b{color:var(--text);font-weight:600}
+.sys-foot{
+  display:flex;flex-wrap:wrap;gap:5px;margin-top:15px;padding-top:13px;
+  border-top:1px solid var(--line);
+}
+.sys-foot span{
+  font-family:var(--mono);font-size:9.5px;color:var(--faint);
+  border:1px solid var(--line);border-radius:4px;padding:2px 6px;
+}
+
+.os-list{margin-top:26px;border-top:1px solid var(--line)}
+.os-list .h{
+  display:flex;align-items:center;gap:10px;padding:14px 0 10px;
+  font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.08em;
+}
+.os-list .h i{flex:1;height:1px;background:var(--line)}
+.os-item{
+  display:grid;grid-template-columns:212px 1fr auto;gap:16px;align-items:baseline;
+  padding:10px 8px;border-radius:6px;transition:background .15s;
+}
+.os-item:hover{background:var(--panel)}
+.os-item .nm{font-family:var(--mono);font-size:11.5px;color:var(--text);letter-spacing:-.01em;word-break:break-all}
+.os-item .ds{font-size:13px;color:var(--muted)}
+.os-item .go{font-family:var(--mono);font-size:11px;color:var(--faint);transition:color .15s}
+.os-item:hover .go{color:var(--accent)}
+
+/* ============================================================
+   COMPETENCY MAP
+   ============================================================ */
+.map-top{
+  display:flex;flex-wrap:wrap;align-items:center;gap:18px;
+  padding:16px 18px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);margin-bottom:18px;
+}
+.map-top .lbl{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.06em}
+.map-top .bar{
+  flex:1;min-width:160px;height:6px;border-radius:3px;background:var(--panel-3);
+  overflow:hidden;display:flex;gap:2px;
+}
+.map-top .bar i{
+  display:block;height:100%;width:0;border-radius:3px;
+  background:var(--accent);
+  transition:width 1.1s cubic-bezier(.2,.7,.3,1);
+}
+.map-top .bar i.wip{
+  background:repeating-linear-gradient(90deg,var(--warn) 0,var(--warn) 3px,transparent 3px,transparent 7px);
+  opacity:.6;
+}
+.map-top .num{font-family:var(--mono);font-size:12px;color:var(--text)}
+.map-top .legend{display:flex;gap:12px;flex-wrap:wrap;margin-left:auto}
+.map-top .legend span{
+  font-family:var(--mono);font-size:10px;color:var(--faint);
+  display:inline-flex;align-items:center;gap:5px;
+}
+.map-top .legend i{width:6px;height:6px;border-radius:50%}
+.dot-done{background:var(--accent)}
+.dot-wip{background:var(--warn)}
+.dot-next{background:var(--faint);opacity:.6}
+
+.domains{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.domain{
+  border:1px solid var(--line);border-radius:10px;background:var(--panel);
+  padding:20px;display:flex;flex-direction:column;
+}
+.domain-h{display:flex;align-items:baseline;gap:10px;margin-bottom:3px}
+.domain-h .id{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.1em}
+.domain-h h3{font-size:15px;font-weight:640;margin:0;letter-spacing:-.01em}
+.domain-h .pct{
+  margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--faint);
+}
+.domain-sub{font-size:12.5px;color:var(--faint);margin-bottom:14px;line-height:1.6}
+.caps{display:flex;flex-direction:column;gap:7px;flex:1}
+.cap{
+  display:flex;align-items:center;gap:9px;
+  font-size:13px;color:var(--muted);line-height:1.5;
+}
+.cap i{
+  width:5px;height:5px;border-radius:50%;flex:0 0 5px;
+}
+.cap.done i{background:var(--accent)}
+.cap.wip i{background:var(--warn)}
+.cap.next i{background:var(--faint);opacity:.5}
+.cap.done{color:var(--text)}
+.cap .st{
+  margin-left:auto;font-family:var(--mono);font-size:9px;
+  letter-spacing:.05em;color:var(--faint);flex:0 0 auto;padding-left:8px;
+}
+.cap.done .st{color:var(--accent)}
+.cap.wip .st{color:var(--warn)}
+
+/* ============================================================
+   ROADMAP
+   ============================================================ */
+.road{position:relative;padding-left:26px}
+.road::before{
+  content:"";position:absolute;left:5px;top:8px;bottom:8px;width:1px;
+  background:linear-gradient(180deg,var(--accent-line),var(--line),transparent);
+}
+.ph{position:relative;padding-bottom:30px}
+.ph:last-child{padding-bottom:0}
+.ph::before{
+  content:"";position:absolute;left:-26px;top:7px;
+  width:11px;height:11px;border-radius:50%;
+  background:var(--bg);border:1.5px solid var(--line-2);
+}
+.ph.now::before{border-color:var(--accent);background:var(--accent);box-shadow:0 0 0 4px var(--accent-dim)}
+.ph-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:8px}
+.ph-tag{
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+  color:var(--faint);border:1px solid var(--line-2);border-radius:4px;padding:1px 6px;
+}
+.ph.now .ph-tag{color:var(--accent);border-color:var(--accent-line);background:var(--accent-dim)}
+.ph-h h3{font-size:15.5px;font-weight:640;margin:0;letter-spacing:-.01em}
+.ph-date{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-left:auto}
+.ph-goal{font-size:13.5px;color:var(--muted);margin:0 0 11px;line-height:1.7}
+.ph-goal b{color:var(--text);font-weight:600}
+.ph ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.ph li{position:relative;padding-left:15px;font-size:13px;color:var(--muted);line-height:1.7}
+.ph li::before{content:"";position:absolute;left:0;top:10px;width:4px;height:1px;background:var(--faint)}
+.ph-check{
+  margin-top:10px;padding:8px 12px;border-radius:6px;
+  background:var(--info-dim);border:1px solid rgba(106,166,255,.2);
+  font-size:12.5px;color:var(--muted);
+}
+.ph-check b{color:var(--info);font-family:var(--mono);font-size:10px;letter-spacing:.06em;margin-right:7px}
+
+/* ============================================================
+   CONTACT
+   ============================================================ */
+.contact-box{
+  border:1px solid var(--line-2);border-radius:12px;background:var(--panel);
+  padding:clamp(26px,4vw,44px);box-shadow:var(--shadow);
+}
+.contact-box h2{
+  font-size:clamp(24px,3.4vw,34px);font-weight:660;letter-spacing:-.022em;
+  line-height:1.28;margin:0 0 14px;
+}
+.contact-box h2 .hl{color:var(--accent)}
+.contact-box p{color:var(--muted);font-size:14.5px;max-width:56ch;margin:0 0 26px;line-height:1.78}
+.contact-box p b{color:var(--text);font-weight:600}
+.cgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.clink{
+  background:var(--panel);padding:15px 17px;
+  display:flex;align-items:center;gap:12px;transition:background .16s;
+}
+a.clink:hover{background:var(--panel-2)}
+.clink .k{font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.07em;margin-bottom:3px}
+.clink .v{font-size:13.5px;color:var(--text)}
+.clink .go{margin-left:auto;color:var(--faint);font-family:var(--mono);font-size:12px;transition:color .16s}
+a.clink:hover .go{color:var(--accent)}
+.mailwrap{position:relative;margin-left:auto}
+.mailbtn{
+  border:1px solid var(--accent-line);background:var(--accent-dim);color:var(--accent);
+  font-size:12px;font-weight:560;padding:5px 11px;border-radius:6px;
+  display:inline-flex;align-items:center;gap:5px;transition:.16s;
+}
+.mailbtn:hover{background:var(--accent);color:var(--bg)}
+.mailmenu{
+  position:absolute;bottom:calc(100% + 8px);right:0;width:216px;
+  padding:5px;background:var(--panel-2);border:1px solid var(--line-2);
+  border-radius:9px;box-shadow:var(--shadow);z-index:60;
+  opacity:0;visibility:hidden;pointer-events:none;transform:translateY(5px);
+  transition:opacity .18s,transform .18s,visibility .18s;
+}
+.mailmenu.open{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
+.mailmenu button{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;
+  padding:8px 10px;border:0;border-radius:6px;background:transparent;
+  font-size:12.5px;color:var(--text);text-align:left;transition:background .14s;
+}
+.mailmenu button:hover{background:var(--panel-3)}
+.mailmenu button .h{font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+.mailmenu hr{border:0;border-top:1px solid var(--line);margin:4px 3px}
+
+footer{
+  border-top:1px solid var(--line);margin-top:56px;
+  padding:22px 0 40px;display:flex;flex-wrap:wrap;gap:10px;
+  font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.02em;
+}
+footer .r{margin-left:auto}
+
+/* ============================================================
+   REVEAL
+   ============================================================ */
+.rv{opacity:0;transform:translateY(12px);transition:opacity .6s cubic-bezier(.2,.7,.3,1),transform .6s cubic-bezier(.2,.7,.3,1)}
+.rv.in{opacity:1;transform:none}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:960px){
+  .hero-grid{grid-template-columns:1fr}
+  .sys-grid,.domains{grid-template-columns:1fr}
+  .sec-sub{display:none}
+}
+@media (max-width:720px){
+  .case{grid-template-columns:1fr;gap:14px}
+  .case-l{flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px}
+  .case-tag{margin-top:0}
+  .crow{grid-template-columns:1fr;gap:2px}
+  .crow .k{padding-top:2px}
+  .cgrid{grid-template-columns:1fr}
+  .stage-body{padding-left:16px}
+  .stage .en{display:none}
+  .stage summary{gap:9px}
+  .topnav a{padding:6px 8px;font-size:11px}
+  .brand .txt em{display:none}
+  .out .row{grid-template-columns:1fr;gap:1px;padding:6px 0}
+  .out .rk{padding-top:0}
+  .os-item{grid-template-columns:1fr;gap:2px;padding:9px 8px}
+  .os-item .go{display:none}
+  .road{padding-left:22px}
+  .ph::before{left:-22px}
+  .map-top .legend{display:none}
+  .contact-box h2{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .rv{opacity:1;transform:none}
+  .term-body .ln{opacity:1;transform:none}
+  .out .row,.out .sep,.hit{opacity:1;transform:none}
+}
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+@media print{
+  :root,html[data-theme="dark"],html[data-theme="light"]{
+    --bg:#fff;--panel:#fff;--panel-2:#fff;--panel-3:#fff;
+    --line:#ddd;--line-2:#ccc;--text:#111;--muted:#444;--faint:#777;
+    --accent:#0a7a4d;--accent-dim:#f0f7f4;--accent-line:#9dcfb8;
+  }
+  body{background:#fff;font-size:10.5pt}
+  body::before{display:none}
+  .topbar,#progress,.icon-btn,.console,.tabs,.mailwrap,.stage summary::after,.os-list,.principles{display:none!important}
+  section{padding:14pt 0;break-inside:avoid}
+  .hero{padding-top:0}
+  .hero-grid{grid-template-columns:1fr}
+  .term{display:none}
+  .stage{border:0;border-bottom:1px solid #ddd;border-radius:0}
+  .stage-body{display:block!important;padding:4pt 0 8pt 0}
+  details{break-inside:avoid}
+  details:not([open]) .stage-body{display:block}
+  .rv{opacity:1!important;transform:none!important}
+  .sys-grid,.domains{grid-template-columns:1fr 1fr}
+  .case{grid-template-columns:110pt 1fr}
+  a{text-decoration:none}
+  footer{margin-top:16pt;padding:8pt 0}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<header class="topbar">
+  <a class="brand" href="#top">
+    <span class="mark">ZX</span>
+    <span class="txt">赵旭<em>FORWARD DEPLOYED ENGINEER</em></span>
+  </a>
+  <nav class="topnav" id="topnav">
+    <a href="#field">01 现场</a>
+    <a href="#pipe">02 链路</a>
+    <a href="#console">03 诊断台</a>
+    <a href="#systems">04 项目</a>
+    <a href="#map">05 能力</a>
+    <a href="#road">06 路线</a>
+    <a href="#contact">07 联系</a>
+  </nav>
+  <button class="icon-btn" id="themeBtn" aria-label="切换深浅色主题">
+    <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>
+  </button>
+</header>
+
+<main>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="hero" id="top">
+  <div class="wrap">
+    <div class="statusline">
+      <span class="live"><i></i>OPEN TO OFFER</span>
+      <span class="sep">/</span><b>2027 届</b>
+      <span class="sep">/</span>BASE <b>青岛</b>
+      <span class="sep">/</span>ON-SITE <b>可长期出差</b>
+      <span class="sep">/</span>AVAILABLE <b>2027.07</b>
+    </div>
+
+    <div class="hero-grid">
+      <div>
+        <h1 class="hero-title">
+          把 LLM 与数据系统<br>
+          <span class="dim">落到客户的</span><span class="hl">生产环境</span>里。
+        </h1>
+        <p class="hero-lead">
+          我是赵旭，青岛大学 2027 届。在海信的大客户项目里，我学会怎么进现场、怎么把一句「这流程太慢」拆成<b>可验收的指标</b>；在 10+ 个自建项目里，我学会怎么让 LLM 从 demo 变成<b>能被评测、能被回滚的系统</b>。
+        </p>
+        <p class="hero-lead">
+          专业是纺织工程，看起来离软件很远。但纺织本质是<b>非标制造</b>——纤维、工艺、测试标准、成本四段互相打架，这和我现在做的事是同一件事：在约束里找一个能跑通的解。
+        </p>
+        <div class="principles">
+          <span class="on">可评测</span>
+          <span class="on">可观测</span>
+          <span class="on">可回滚</span>
+          <span class="on">可迭代</span>
+        </div>
+      </div>
+
+      <div class="term" role="img" aria-label="模拟一次部署流程的终端输出">
+        <div class="term-bar">
+          <span class="dots"><i></i><i></i><i></i></span>
+          <span class="tt">fde — deploy / hisense</span>
+        </div>
+        <div class="term-body">
+          <span class="ln"><span class="c-dim">$</span> <span class="c-cmd">fde deploy --client hisense --scope 大客户销售</span></span>
+          <span class="ln"><span class="c-ok">[ok]</span> <span class="c-tag">现场诊断</span> <span class="c-dim">3 部门轮岗 · 12 个流程节点 · 单点耗时 top3 已定位</span></span>
+          <span class="ln"><span class="c-ok">[ok]</span> <span class="c-tag">数据接入</span> <span class="c-dim">订单 / 库存 / 物流 3 源，口径已对齐 9 个字段</span></span>
+          <span class="ln"><span class="c-ok">[ok]</span> <span class="c-tag">工具定义</span> <span class="c-dim">7 个 tool schema，2 个 mutating 需人工审批</span></span>
+          <span class="ln"><span class="c-warn">[!]</span>  <span class="c-tag">评测闸门</span> <span class="c-dim">样本 38 &lt; min_cases 50，</span><span class="c-warn">阻断发布</span></span>
+          <span class="ln"><span class="c-ok">[ok]</span> <span class="c-tag">可观测</span> <span class="c-dim">trace 已打通，P95 延迟 1.8s，单次成本 ¥0.031</span></span>
+          <span class="ln"><span class="c-info">→</span>  <span class="c-cmd">status: BLOCKED_ON_EVAL</span></span>
+          <span class="ln"><span class="c-dim">   next: 补 12 条现场修正样本，重跑 gate</span> <span class="cursor"></span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     01 FIELD
+     ============================================================ -->
+<section id="field">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-num">01</span>
+      <h2 class="sec-title">现场，是需求文档写不出来的地方</h2>
+      <span class="sec-sub">FIELD DIAGNOSIS / 三个非标现场</span>
+    </div>
+
+    <div class="cases rv">
+      <article class="case">
+        <div class="case-l">
+          <span class="case-id">CASE 01</span>
+          <span class="case-org">海信集团 · 国内营销</span>
+          <span class="case-tag">企业大客户</span>
+        </div>
+        <div class="case-r">
+          <div class="crow"><span class="k">原话</span><span class="v"><span class="q">「报价到交付，中间十几个人在传 Excel。」</span></span></div>
+          <div class="crow"><span class="k">拆解</span><span class="v">跟着胶东机场、青岛地铁这类总额超千万的项目走完全流程，把链路拆成 <b>12 个节点</b>，标出谁在等谁、单点耗时最长的 3 个环节，最后判断<b>只有 2 个环节适合先上 AI</b>——其余是权限和组织问题，上模型只会把混乱放大。</span></div>
+          <div class="crow"><span class="k">落地</span><span class="v">大客户销售 AI 工作平台、AI 物流自追踪、AI 排产规划三个场景；在集团自研智能体平台上搭业务智能体，接自研插件做功能闭环。</span></div>
+          <div class="case-why"><b>判断：</b>客户说「要一个 AI」，真实诉求往往是「少等三天」。这两件事之间隔着一整套流程改造。</div>
+        </div>
+      </article>
+
+      <article class="case">
+        <div class="case-l">
+          <span class="case-id">CASE 02</span>
+          <span class="case-org">省级大创 · 聚乳酸纤维</span>
+          <span class="case-tag">工业产线</span>
+        </div>
+        <div class="case-r">
+          <div class="crow"><span class="k">原话</span><span class="v"><span class="q">「实验室数据好看，一上产线就废。」</span></span></div>
+          <div class="crow"><span class="k">拆解</span><span class="v">项目负责人，从立项、资源争取到项目管理走完整条工业化链：<b>原料价格波动 → 改性工艺 → 测试标准 → 商业化成本</b>。四段各有各的硬约束，且互相牵制——降成本就掉耐温，提耐温就超预算。</span></div>
+          <div class="crow"><span class="k">迁移</span><span class="v">这就是客户现场的样子：<b>没有一份干净的需求文档，只有一堆互相打架的物理约束</b>。FDE 的第一课不是写代码，是搞清楚哪些约束是真的、哪些只是没人质疑过。</span></div>
+          <div class="case-why"><b>判断：</b>先找约束，再找方案。顺序反了，方案一定会被现场推翻。</div>
+        </div>
+      </article>
+
+      <article class="case">
+        <div class="case-l">
+          <span class="case-id">CASE 03</span>
+          <span class="case-org">校园分销网络 · 创始人</span>
+          <span class="case-tag">小 B 渠道</span>
+        </div>
+        <div class="case-r">
+          <div class="crow"><span class="k">原话</span><span class="v"><span class="q">「卖得动，但不知道下个月该进多少货。」</span></span></div>
+          <div class="crow"><span class="k">拆解</span><span class="v">500+ 人推广社群，年流水 50 万+。做念本酸奶校园分销时把链路拆成<b>选品 → 进销存 → 活动 → 复购</b>，用 Excel + Python 监控销售、库存、复购三张表，单月销售额提升 40%，沉淀成可复制的 SOP。</span></div>
+          <div class="crow"><span class="k">发现</span><span class="v">瓶颈不在预测模型，在<b>数据口径</b>——五个院系经销商的「一箱」定义都不一样。先把口径统一，简单移动平均就够了。</span></div>
+          <div class="case-why"><b>判断：</b>数据不通的时候，先修数据。急着上模型，只会得到一份更精致的错误答案。</div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     02 PIPELINE
+     ============================================================ -->
+<section id="pipe">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-num">02</span>
+      <h2 class="sec-title">一次交付，七段链路</h2>
+      <span class="sec-sub">DELIVERY PIPELINE / 从现场到回滚</span>
+    </div>
+
+    <div class="pipe-svg-wrap rv">
+      <svg viewBox="0 0 1120 168" role="img" aria-label="交付链路七个阶段：诊断、接入、检索与工具、编排、评测、可观测、上线与回滚">
+        <defs>
+          <linearGradient id="lg" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#3ddc97" stop-opacity=".55"/>
+            <stop offset="55%" stop-color="#6aa6ff" stop-opacity=".45"/>
+            <stop offset="100%" stop-color="#6aa6ff" stop-opacity=".12"/>
+          </linearGradient>
+        </defs>
+        <line x1="72" y1="62" x2="1048" y2="62" stroke="url(#lg)" stroke-width="1"/>
+        <g font-family="ui-monospace, monospace" text-anchor="middle">
+          <!-- nodes -->
+          <g>
+            <circle cx="72" cy="62" r="9" fill="#3ddc97" fill-opacity=".14" stroke="#3ddc97" stroke-width="1.2"/>
+            <circle cx="72" cy="62" r="3" fill="#3ddc97"/>
+            <text x="72" y="30" font-size="9" fill="#5a626d" letter-spacing="1">01</text>
+            <text x="72" y="98" font-size="11.5" fill="#e7eaee">业务诊断</text>
+            <text x="72" y="116" font-size="9" fill="#5a626d">diagnose</text>
+            <text x="72" y="140" font-size="9" fill="#3ddc97">已交付</text>
+          </g>
+          <g>
+            <circle cx="234" cy="62" r="9" fill="#f5b544" fill-opacity=".14" stroke="#f5b544" stroke-width="1.2"/>
+            <circle cx="234" cy="62" r="3" fill="#f5b544"/>
+            <text x="234" y="30" font-size="9" fill="#5a626d" letter-spacing="1">02</text>
+            <text x="234" y="98" font-size="11.5" fill="#e7eaee">数据接入</text>
+            <text x="234" y="116" font-size="9" fill="#5a626d">ingest</text>
+            <text x="234" y="140" font-size="9" fill="#f5b544">部分</text>
+          </g>
+          <g>
+            <circle cx="396" cy="62" r="9" fill="#3ddc97" fill-opacity=".14" stroke="#3ddc97" stroke-width="1.2"/>
+            <circle cx="396" cy="62" r="3" fill="#3ddc97"/>
+            <text x="396" y="30" font-size="9" fill="#5a626d" letter-spacing="1">03</text>
+            <text x="396" y="98" font-size="11.5" fill="#e7eaee">检索与工具</text>
+            <text x="396" y="116" font-size="9" fill="#5a626d">retrieve / tools</text>
+            <text x="396" y="140" font-size="9" fill="#3ddc97">已交付</text>
+          </g>
+          <g>
+            <circle cx="558" cy="62" r="9" fill="#3ddc97" fill-opacity=".14" stroke="#3ddc97" stroke-width="1.2"/>
+            <circle cx="558" cy="62" r="3" fill="#3ddc97"/>
+            <text x="558" y="30" font-size="9" fill="#5a626d" letter-spacing="1">04</text>
+            <text x="558" y="98" font-size="11.5" fill="#e7eaee">编排</text>
+            <text x="558" y="116" font-size="9" fill="#5a626d">orchestrate</text>
+            <text x="558" y="140" font-size="9" fill="#3ddc97">已交付</text>
+          </g>
+          <g>
+            <circle cx="720" cy="62" r="10" fill="#3ddc97" fill-opacity=".2" stroke="#3ddc97" stroke-width="1.6"/>
+            <circle cx="720" cy="62" r="3.6" fill="#3ddc97"/>
+            <text x="720" y="30" font-size="9" fill="#3ddc97" letter-spacing="1">05 ★</text>
+            <text x="720" y="98" font-size="11.5" fill="#e7eaee">评测闸门</text>
+            <text x="720" y="116" font-size="9" fill="#5a626d">eval gate</text>
+            <text x="720" y="140" font-size="9" fill="#3ddc97">已交付</text>
+          </g>
+          <g>
+            <circle cx="882" cy="62" r="9" fill="#f5b544" fill-opacity=".14" stroke="#f5b544" stroke-width="1.2"/>
+            <circle cx="882" cy="62" r="3" fill="#f5b544"/>
+            <text x="882" y="30" font-size="9" fill="#5a626d" letter-spacing="1">06</text>
+            <text x="882" y="98" font-size="11.5" fill="#e7eaee">可观测</text>
+            <text x="882" y="116" font-size="9" fill="#5a626d">observe</text>
+            <text x="882" y="140" font-size="9" fill="#f5b544">在做</text>
+          </g>
+          <g>
+            <circle cx="1044" cy="62" r="9" fill="none" stroke="#5a626d" stroke-width="1.2" stroke-dasharray="2 2"/>
+            <circle cx="1044" cy="62" r="3" fill="#5a626d"/>
+            <text x="1044" y="30" font-size="9" fill="#5a626d" letter-spacing="1">07</text>
+            <text x="1044" y="98" font-size="11.5" fill="#e7eaee">上线与回滚</text>
+            <text x="1044" y="116" font-size="9" fill="#5a626d">ship / rollback</text>
+            <text x="1044" y="140" font-size="9" fill="#5a626d">下一步</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <div class="chain rv">
+
+      <details class="stage" open>
+        <summary>
+          <span class="no">01</span>
+          <span class="nm">业务诊断</span>
+          <span class="en">diagnose</span>
+          <span class="pill done">已交付</span>
+        </summary>
+        <div class="stage-body">
+          <div class="q-line">这一段解决的问题：客户描述的是「感受」，我需要拿到的是「可测量的现状」。</div>
+          <ul>
+            <li><b>画流程节点图</b>：谁发起、谁审批、谁在等谁、每个节点平均耗时多少。在海信跟项目时把报价到交付拆成 12 个节点。</li>
+            <li><b>找瓶颈而不是找痛点</b>：痛点是人说的，瓶颈是数据里排出来的。两者经常不是同一个。</li>
+            <li><b>定义验收指标</b>：把「太慢了」翻译成「平均交付周期从 21 天降到 14 天，且返工率不上升」。</li>
+            <li><b>划边界</b>：明确哪些是 AI 能碰的，哪些是权限、组织、KPI 问题——后者上模型只会放大混乱。</li>
+          </ul>
+          <div class="pit"><b>坑</b>直接接需求开工，三周后发现真正卡住的环节根本不在需求里。</div>
+        </div>
+      </details>
+
+      <details class="stage">
+        <summary>
+          <span class="no">02</span>
+          <span class="nm">数据接入</span>
+          <span class="en">ingest</span>
+          <span class="pill wip">部分</span>
+        </summary>
+        <div class="stage-body">
+          <div class="q-line">这一段解决的问题：客户的系统是活的，我要在不惊动它的前提下把数据取出来。</div>
+          <ul>
+            <li><b>源系统盘点</b>：ERP / CRM / WMS / MES / 一堆 Excel，逐个确认接口形式（API、视图、导出、只能截图）。</li>
+            <li><b>口径对齐</b>：同一个「订单金额」，销售、财务、物流三张表三个数。先把定义写成文档，再写代码。</li>
+            <li><b>增量与幂等</b>：按时间戳或变更日志拉增量，写入侧用 upsert，保证重跑不产生重复。</li>
+            <li><b>脏数据处理</b>：空值、重复、单位不一致、历史脏数据。这里花的时间通常超过建模。</li>
+            <li><b>我的现状</b>：SQL 与 Python 数据处理是熟的（分销项目里自己搭过进销存监控）；生产级 ETL、CDC、调度与血缘还在补。</li>
+          </ul>
+          <div class="pit"><b>坑</b>数据没对齐就开始做检索，最后模型答得越流畅，错得越自信。</div>
+        </div>
+      </details>
+
+      <details class="stage">
+        <summary>
+          <span class="no">03</span>
+          <span class="nm">检索与工具层</span>
+          <span class="en">retrieve / tools</span>
+          <span class="pill done">已交付</span>
+        </summary>
+        <div class="stage-body">
+          <div class="q-line">这一段解决的问题：模型不能凭空知道客户的业务，得给它知识（检索）和手（工具）。</div>
+          <ul>
+            <li><b>检索侧</b>：文档切分策略、embedding 选型、混合召回（向量 + 关键词）、重排、引用溯源。答案必须能点回原文。</li>
+            <li><b>工具侧</b>：每个工具定义 schema，并标注两个关键属性——<b>是否改变系统状态</b>、<b>是否需要人工审批</b>。</li>
+            <li><b>权限在代码层强制</b>：不能靠 prompt 里写「请不要随便退款」。退款这类 mutating 工具，没有审批就直接抛异常。</li>
+            <li><b>我的实践</b>：海信智能体平台上搭业务智能体、接自研插件做闭环；跨境电商项目里把「采集 → 筛选 → 内容生成 → 上架」拆成受控的四步。</li>
+          </ul>
+          <div class="pit"><b>坑</b>把权限写进 system prompt。模型被绕过的成本，比多写十行 if 高得多。</div>
+        </div>
+      </details>
+
+      <details class="stage">
+        <summary>
+          <span class="no">04</span>
+          <span class="nm">编排</span>
+          <span class="en">orchestrate</span>
+          <span class="pill done">已交付</span>
+        </summary>
+        <div class="stage-body">
+          <div class="q-line">这一段解决的问题：客户流程本身在变，硬编码的流水线第三周就过时。</div>
+          <ul>
+            <li><b>先问该不该用 Agent</b>：路径固定的用状态机，路径开放才交给模型决策。多数场景是状态机加一个模型节点，不是全自动 Agent。</li>
+            <li><b>人工闸门</b>：高风险动作前插人工确认，把「人在环」做成一等公民而不是补丁。</li>
+            <li><b>上下文工程</b>：长会话的压缩、摘要、关键信息保活。我写过 <b>squeeze</b>（上下文压缩 CLI，实测省 60–87% token）。</li>
+            <li><b>失败可恢复</b>：每一步落 checkpoint，中断后能从断点续，而不是从头再烧一遍 token。</li>
+          </ul>
+          <div class="pit"><b>坑</b>用 Agent 的自由度去解决流程问题。自由度越高，越难验收。</div>
+        </div>
+      </details>
+
+      <details class="stage">
+        <summary>
+          <span class="no">05</span>
+          <span class="nm">评测闸门</span>
+          <span class="en">eval gate</span>
+          <span class="pill done">已交付</span>
+        </summary>
+        <div class="stage-body">
+          <div class="q-line">这一段解决的问题：这是 demo 与生产的分界线。没有闸门，上线只是掷骰子。</div>
+          <ul>
+            <li><b>现场修正即标注</b>：客户业务专家每一次改判，都是最值钱的样本——任何公开 benchmark 都给不了。</li>
+            <li><b>样本库 + 回归</b>：人工修正自动入库，每次改动跑全量回归，防止「修好 A 弄坏 B」。</li>
+            <li><b>双闸门</b>：<b>threshold</b>（准确率下限）+ <b>min_cases</b>（样本量下限）。样本只有 3 条全中也不许发。</li>
+            <li><b>多评委一致性</b>：LLM-as-Judge 单评委有偏，用多评委 + <b>ICC 组内相关系数</b>检验一致性，不达标就说明评分维度没定义清楚。</li>
+            <li><b>我的实践</b>：Multi-Agent Code Studio 里做了五维加权评估 + ICC 一致性检验 + 质量门控，形成「评测 → 归因 → 优化」闭环；GEO Optimizer 用同样方法做 6 维内容评分。</li>
+          </ul>
+          <div class="pit"><b>坑</b>用训练集当测试集。分数很漂亮，上线第一周就被客户打回。</div>
+        </div>
+      </details>
+
+      <details class="stage">
+        <summary>
+          <span class="no">06</span>
+          <span class="nm">可观测</span>
+          <span class="en">observe</span>
+          <span class="pill wip">在做</span>
+        </summary>
+        <div class="stage-body">
+          <div class="q-line">这一段解决的问题：客户半夜打电话说「今天答得不对」，我得能查出来是哪一步坏的。</div>
+          <ul>
+            <li><b>trace 而不是 log</b>：一次问答拆成检索、重排、模型调用、工具执行多个 span，逐段看耗时与输出。</li>
+            <li><b>对齐 OpenTelemetry 的 GenAI 语义约定</b>：模型名、token 用量、延迟按标准字段埋点，直接进客户已有的 Datadog / Jaeger，而不是另起一个黑盒看板。</li>
+            <li><b>成本与延迟看板</b>：P50 / P95 延迟、单次成本、失败率，按场景拆开。</li>
+            <li><b>我的现状</b>：做过行为数据监控（高考择校助手，200+ 用户）驱动迭代，但 OTel / span 这一套还在补，是目前最想补的一块。</li>
+          </ul>
+          <div class="pit"><b>坑</b>只记录「调用成功」，不记录「答得对不对」。前者是运维，后者才是产品。</div>
+        </div>
+      </details>
+
+      <details class="stage">
+        <summary>
+          <span class="no">07</span>
+          <span class="nm">上线与回滚</span>
+          <span class="en">ship / rollback</span>
+          <span class="pill next">下一步</span>
+        </summary>
+        <div class="stage-body">
+          <div class="q-line">这一段解决的问题：让「出问题」成为一件可承受的事，客户才敢让你上线。</div>
+          <ul>
+            <li><b>影子流量</b>：新版本先旁路跑，不接管业务，只比对输出差异。</li>
+            <li><b>灰度与开关</b>：按客户、按场景、按比例放量，出问题一个开关切回。</li>
+            <li><b>模型路由</b>：简单请求走私有化小模型（零边际成本），复杂请求才升级到云端大模型。</li>
+            <li><b>入口护栏</b>：PII 检测放在入口而不是出口——出口拦截意味着敏感数据已经进过第三方模型，合规上说不清。</li>
+            <li><b>我的现状</b>：容器化、Linux、CI/CD 在学，还没在真实客户环境跑过一次完整灰度。这一块我打算用个人项目补齐。</li>
+          </ul>
+          <div class="pit"><b>坑</b>没有回滚方案就上线。第一次故障就会把前面所有信任清零。</div>
+        </div>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     03 CONSOLE
+     ============================================================ -->
+<section id="console">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-num">03</span>
+      <h2 class="sec-title">现场诊断台</h2>
+      <span class="sec-sub">INTERACTIVE / 选一个场景，看我怎么拆</span>
+    </div>
+
+    <div class="console rv">
+      <div class="console-top">
+        <span class="ct"><b>●</b> field-console <span style="opacity:.5">v0.3</span></span>
+        <div class="tabs" role="tablist">
+          <button class="on" data-mode="diagnose" role="tab">diagnose</button>
+          <button data-mode="retrieve" role="tab">retrieve</button>
+        </div>
+      </div>
+      <div class="console-body" id="cBody"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     04 SYSTEMS
+     ============================================================ -->
+<section id="systems">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-num">04</span>
+      <h2 class="sec-title">四个自建系统</h2>
+      <span class="sec-sub">BUILT SYSTEMS / 用交付语言重写</span>
+    </div>
+
+    <div class="sys-grid rv">
+
+      <article class="sys">
+        <div class="sys-h"><h3>Multi-Agent Code Studio</h3><span class="arw">↗</span></div>
+        <div class="sys-meta">2025.03 — 至今 · 独立开发</div>
+        <div class="sys-rows">
+          <div class="sys-row"><span class="k">问题</span><span class="v">AI 生成的代码质量方差极大，团队没法判断「这次能不能用」。</span></div>
+          <div class="sys-row"><span class="k">约束</span><span class="v">没有人工标注预算，只能用 LLM 当评委，但单评委评分漂移严重。</span></div>
+          <div class="sys-row"><span class="k">做法</span><span class="v">五维加权评估 + <b>ICC 一致性检验</b>（评委间不达标就重定义维度）+ 质量门控，形成「评测 → 归因 → 优化」闭环。</span></div>
+          <div class="sys-row"><span class="k">闸门</span><span class="v">分数低于阈值直接拦在合并前，不进入下游。</span></div>
+        </div>
+        <div class="sys-foot"><span>LLM-as-Judge</span><span>ICC</span><span>Eval Gate</span><span>PRD</span></div>
+      </article>
+
+      <article class="sys">
+        <div class="sys-h"><h3>GEO Optimizer</h3><span class="arw">↗</span></div>
+        <div class="sys-meta">2026.06 — 至今 · 独立开发</div>
+        <div class="sys-rows">
+          <div class="sys-row"><span class="k">问题</span><span class="v">内容在传统 SEO 里排名不错，但被 AI 搜索引擎引用的概率接近零，且没人说得清为什么。</span></div>
+          <div class="sys-row"><span class="k">约束</span><span class="v">「会被引用」没有 ground truth，只能构造可复现的代理指标。</span></div>
+          <div class="sys-row"><span class="k">做法</span><span class="v">拆出 <b>6 维度评分模型</b>，五维加权 + ICC 校准，输出可执行的改写建议而不是一个总分。</span></div>
+          <div class="sys-row"><span class="k">形态</span><span class="v">FastAPI 服务 + 评分报告，可直接嵌进内容工作流。</span></div>
+        </div>
+        <div class="sys-foot"><span>评分建模</span><span>ICC</span><span>FastAPI</span><span>AI 搜索</span></div>
+      </article>
+
+      <article class="sys">
+        <div class="sys-h"><h3>高考择校 AI 问答助手</h3><span class="arw">↗</span></div>
+        <div class="sys-meta">2024.06 — 至今 · 独立开发</div>
+        <div class="sys-rows">
+          <div class="sys-row"><span class="k">问题</span><span class="v">考生和家长的信息不对称，公开数据分散在几百个页面里。</span></div>
+          <div class="sys-row"><span class="k">约束</span><span class="v">零预算、零团队，必须一个人从调研做到上线。</span></div>
+          <div class="sys-row"><span class="k">做法</span><span class="v">问卷 N=150+ 与深访定位真实问题，Python / FastAPI 全栈上线，服务 <b>200+ 用户</b>，埋行为数据驱动迭代。</span></div>
+          <div class="sys-row"><span class="k">结果</span><span class="v">获省级创新创业立项；这套「先埋点再改」的习惯后来一直用。</span></div>
+        </div>
+        <div class="sys-foot"><span>全栈</span><span>FastAPI</span><span>行为埋点</span><span>用户调研</span></div>
+      </article>
+
+      <article class="sys">
+        <div class="sys-h"><h3>跨境电商筛货上架 Agent</h3><span class="arw">↗</span></div>
+        <div class="sys-meta">2025.02 — 2025.03 · 独立开发</div>
+        <div class="sys-rows">
+          <div class="sys-row"><span class="k">问题</span><span class="v">选品到上架全是人工，一个人一天只能处理几十个 SKU。</span></div>
+          <div class="sys-row"><span class="k">约束</span><span class="v">上架内容直接面向消费者，输出必须可控、可复核，不能自由发挥。</span></div>
+          <div class="sys-row"><span class="k">做法</span><span class="v">拆成「采集 → 筛选 → 内容生成 → 上架」四步受控工作流，Prompt 模板化，每步产物可回看可改。</span></div>
+          <div class="sys-row"><span class="k">取舍</span><span class="v">放弃全自动 Agent，选状态机——因为验收标准是「不出错」而不是「够聪明」。</span></div>
+        </div>
+        <div class="sys-foot"><span>Workflow</span><span>Prompt 模板</span><span>受控生成</span><span>AIGC</span></div>
+      </article>
+
+    </div>
+
+    <div class="os-list rv">
+      <div class="h"><span>开源 / 工具</span><i></i><span>GITHUB</span></div>
+      <a class="os-item" href="https://github.com/z15346183030/squeeze" target="_blank" rel="noopener">
+        <span class="nm">squeeze</span><span class="ds">上下文压缩 CLI，实测省 60–87% token</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/llm-as-judge" target="_blank" rel="noopener">
+        <span class="nm">llm-as-judge</span><span class="ds">多评委评分 + ICC 一致性检验</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/depmap" target="_blank" rel="noopener">
+        <span class="nm">depmap</span><span class="ds">Python 模块依赖图，零依赖</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/reverse-engineer-for-everything" target="_blank" rel="noopener">
+        <span class="nm">reverse-engineer-for-everything</span><span class="ds">软件逆向工具箱，带证据链</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/prompt-playground" target="_blank" rel="noopener">
+        <span class="nm">prompt-playground</span><span class="ds">纯前端 Prompt 测试台</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/daily-forge" target="_blank" rel="noopener">
+        <span class="nm">daily-forge</span><span class="ds">每天复刻一个千星项目</span><span class="go">↗</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     05 MAP
+     ============================================================ -->
+<section id="map">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-num">05</span>
+      <h2 class="sec-title">FDE 能力地图</h2>
+      <span class="sec-sub">COMPETENCY MAP / 诚实标注，不是全绿</span>
+    </div>
+
+    <div class="map-top rv">
+      <span class="lbl">已交付</span>
+      <div class="bar"><i id="mapBar"></i><i class="wip" id="mapBar2"></i></div>
+      <span class="num"><b id="mapNum">0</b> 已交付 · <span id="mapWip">0</span> 在做 / 29 项</span>
+      <div class="legend">
+        <span><i class="dot-done"></i>已交付</span>
+        <span><i class="dot-wip"></i>在做</span>
+        <span><i class="dot-next"></i>下一步</span>
+      </div>
+    </div>
+
+    <div class="domains rv">
+
+      <div class="domain">
+        <div class="domain-h"><span class="id">A</span><h3>现场与业务翻译</h3></div>
+        <div class="domain-sub">FDE 的第一道门槛。技术再好，听不懂客户在说什么就等于零。</div>
+        <div class="caps">
+          <div class="cap done"><i></i>业务流程拆解（节点 / 角色 / 耗时）<span class="st">已交付</span></div>
+          <div class="cap done"><i></i>客户访谈与期望管理<span class="st">已交付</span></div>
+          <div class="cap done"><i></i>把痛点翻译成可验收指标<span class="st">已交付</span></div>
+          <div class="cap done"><i></i>决策链与预算归属识别<span class="st">已交付</span></div>
+          <div class="cap wip"><i></i>ROI 测算与商业论证<span class="st">在做</span></div>
+          <div class="cap wip"><i></i>范围控制与现场冲突处理<span class="st">在做</span></div>
+          <div class="cap next"><i></i>行业纵深（制造 / 零售至少一个）<span class="st">下一步</span></div>
+        </div>
+      </div>
+
+      <div class="domain">
+        <div class="domain-h"><span class="id">B</span><h3>LLM 应用工程</h3></div>
+        <div class="domain-sub">不是调 API，是知道模型在哪里一定会错，然后提前设计兜底。</div>
+        <div class="caps">
+          <div class="cap done"><i></i>Prompt 工程与结构化输出<span class="st">已交付</span></div>
+          <div class="cap done"><i></i>Agent 编排与 tool schema 设计<span class="st">已交付</span></div>
+          <div class="cap done"><i></i>评测体系（LLM-as-Judge / ICC / 回归闸门）<span class="st">已交付</span></div>
+          <div class="cap done"><i></i>上下文工程与压缩<span class="st">已交付</span></div>
+          <div class="cap wip"><i></i>RAG（切分 / 混合召回 / 重排 / 引用）<span class="st">在做</span></div>
+          <div class="cap wip"><i></i>权限边界与 mutating 工具审批<span class="st">在做</span></div>
+          <div class="cap next"><i></i>微调与蒸馏（小模型降本）<span class="st">下一步</span></div>
+        </div>
+      </div>
+
+      <div class="domain">
+        <div class="domain-h"><span class="id">C</span><h3>数据与系统集成</h3></div>
+        <div class="domain-sub">最不性感、最决定成败。客户的系统不会为你改变。</div>
+        <div class="caps">
+          <div class="cap done"><i></i>SQL 与数据口径对齐<span class="st">已交付</span></div>
+          <div class="cap done"><i></i>Python 数据处理与分析<span class="st">已交付</span></div>
+          <div class="cap wip"><i></i>源系统盘点（ERP / CRM / WMS / MES）<span class="st">在做</span></div>
+          <div class="cap wip"><i></i>向量库与索引选型<span class="st">在做</span></div>
+          <div class="cap wip"><i></i>数据质量与脏数据处理<span class="st">在做</span></div>
+          <div class="cap next"><i></i>ETL / 增量同步 / 幂等写入<span class="st">下一步</span></div>
+          <div class="cap next"><i></i>权限模型与多租户隔离<span class="st">下一步</span></div>
+        </div>
+      </div>
+
+      <div class="domain">
+        <div class="domain-h"><span class="id">D</span><h3>生产工程纪律</h3></div>
+        <div class="domain-sub">这一段决定交付物是「demo」还是「系统」。我目前最大的缺口。</div>
+        <div class="caps">
+          <div class="cap wip"><i></i>Linux 与基础运维<span class="st">在做</span></div>
+          <div class="cap wip"><i></i>Docker / 容器化部署<span class="st">在做</span></div>
+          <div class="cap wip"><i></i>Git 工作流与代码评审<span class="st">在做</span></div>
+          <div class="cap wip"><i></i>CI/CD 与自动化测试<span class="st">在做</span></div>
+          <div class="cap wip"><i></i>成本与延迟路由（小模型 / 大模型分级）<span class="st">在做</span></div>
+          <div class="cap wip"><i></i>合规护栏（PII 检测 / 数据不出域）<span class="st">在做</span></div>
+          <div class="cap next"><i></i>可观测性（OpenTelemetry GenAI 语义约定）<span class="st">下一步</span></div>
+          <div class="cap next"><i></i>灰度 / 影子流量 / 一键回滚<span class="st">下一步</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     06 ROADMAP
+     ============================================================ -->
+<section id="road">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-num">06</span>
+      <h2 class="sec-title">补齐路线</h2>
+      <span class="sec-sub">ROADMAP / 每阶段都有一个可验证产出</span>
+    </div>
+
+    <div class="road rv">
+
+      <div class="ph now">
+        <div class="ph-h">
+          <span class="ph-tag">P0</span>
+          <h3>把评测与可观测做成肌肉记忆</h3>
+          <span class="ph-date">2026.11 — 2027.01</span>
+        </div>
+        <p class="ph-goal">我已经会做评测，但缺的是<b>把它接进真实链路</b>：评测不是离线跑一次，是每次改动都自动跑。</p>
+        <ul>
+          <li>把 llm-as-judge 升级成带样本库、带回归、带双闸门的完整 eval harness，接进 CI。</li>
+          <li>给一个真实 LLM 应用接 OpenTelemetry，按 GenAI 语义约定埋 span，在 Jaeger 里能看到检索 / 重排 / 生成三段耗时。</li>
+          <li>补 RAG 基础：切分策略对比、混合召回、重排，做一份「不同策略下召回率与答案正确率」的对照实验。</li>
+        </ul>
+        <div class="ph-check"><b>验收</b>开源一个能一键跑通的 eval + trace 模板，README 里有一张真实的对照数据表。</div>
+      </div>
+
+      <div class="ph">
+        <div class="ph-h">
+          <span class="ph-tag">P1</span>
+          <h3>做一个端到端系统，从脏数据开始</h3>
+          <span class="ph-date">2027.02 — 2027.04</span>
+        </div>
+        <p class="ph-goal">多数人的作品集从干净数据集开始。<b>我要从脏数据开始</b>——这是客户现场的真实起点。</p>
+        <ul>
+          <li>找一个公开但脏的数据源（政务开放数据 / 电商评论 / 招投标公告），自己做清洗、口径对齐、增量入库。</li>
+          <li>在上面搭一个 RAG + 工具的问答系统，带引用溯源和人工审批闸门。</li>
+          <li>把 P0 的 eval harness 和 trace 直接接上去，形成一个完整闭环。</li>
+        </ul>
+        <div class="ph-check"><b>验收</b>写一份部署报告：数据质量前后对比、检索策略选型依据、闸门拦下了哪几次回归。</div>
+      </div>
+
+      <div class="ph">
+        <div class="ph-h">
+          <span class="ph-tag">P2</span>
+          <h3>补生产工程纪律</h3>
+          <span class="ph-date">2027.05 — 2027.07</span>
+        </div>
+        <p class="ph-goal">这是我目前最大的缺口，也是面试里最容易被问穿的地方。</p>
+        <ul>
+          <li>把 P1 的系统容器化，用 docker-compose 一键起，再上 K8s 跑一遍。</li>
+          <li>做一次真实灰度：影子流量比对 + 按比例放量 + 一键回滚演练，记录回滚耗时。</li>
+          <li>加成本路由（小模型兜简单请求）和入口 PII 护栏，量化降本比例。</li>
+          <li>写一份故障演练复盘：人为制造一次检索失败，看系统降级是否按预期。</li>
+        </ul>
+        <div class="ph-check"><b>验收</b>一次完整的「上线 → 出问题 → 回滚 → 修复 → 再上线」记录，带时间戳。</div>
+      </div>
+
+      <div class="ph">
+        <div class="ph-h">
+          <span class="ph-tag">P3</span>
+          <h3>扎一个行业</h3>
+          <span class="ph-date">入职后持续</span>
+        </div>
+        <p class="ph-goal">FDE 的价值一半在技术，一半在<b>比客户更懂他的业务</b>。泛而不深走不远。</p>
+        <ul>
+          <li>在制造 / 零售里选一个扎下去，把流程、术语、KPI、合规约束摸到能跟业务专家对话。</li>
+          <li>把每个项目的现场经验抽象成可复用组件，而不是每次从零开始。</li>
+        </ul>
+        <div class="ph-check"><b>验收</b>能不看稿子讲清一个行业的完整链路，并指出三个 AI 值得做和三个不值得做的环节。</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     07 CONTACT
+     ============================================================ -->
+<section id="contact">
+  <div class="wrap">
+    <div class="contact-box rv">
+      <h2>在找一个愿意<span class="hl">进现场</span>的工程师吗？</h2>
+      <p>我在找 <b>FDE / 解决方案工程师 / AI 应用工程</b> 方向的校招机会。技术还不算深，但有两件事我确定：<b>我愿意去现场</b>，也<b>愿意为一个指标反复改到跑通</b>。如果你在带团队做企业 AI 落地，欢迎聊聊。</p>
+
+      <div class="cgrid">
+        <div class="clink">
+          <div><div class="k">EMAIL</div><div class="v">2210914541@qq.com</div></div>
+          <div class="mailwrap">
+            <button class="mailbtn" id="mailBtn" aria-haspopup="true" aria-expanded="false">发邮件 <span>▾</span></button>
+            <div class="mailmenu" id="mailMenu" role="menu">
+              <button data-mail="qq">QQ 邮箱 <span class="h">qq.com</span></button>
+              <button data-mail="163">网易 163 邮箱 <span class="h">163.com</span></button>
+              <button data-mail="126">网易 126 邮箱 <span class="h">126.com</span></button>
+              <button data-mail="gmail">Gmail <span class="h">google</span></button>
+              <button data-mail="outlook">Outlook <span class="h">microsoft</span></button>
+              <button data-mail="default">系统默认邮箱 <span class="h">mailto</span></button>
+              <hr>
+              <button data-mail="copy">复制邮箱地址 <span class="h">copy</span></button>
+            </div>
+          </div>
+        </div>
+        <a class="clink" href="https://github.com/z15346183030" target="_blank" rel="noopener">
+          <div><div class="k">GITHUB</div><div class="v">z15346183030</div></div><span class="go">↗</span>
+        </a>
+        <a class="clink" href="tel:15346183030">
+          <div><div class="k">PHONE</div><div class="v">153 4618 3030</div></div><span class="go">↗</span>
+        </a>
+        <div class="clink">
+          <div><div class="k">LOCATION</div><div class="v">青岛 · 可长期出差</div></div>
+        </div>
+        <div class="clink">
+          <div><div class="k">AVAILABLE</div><div class="v">2027.07 可到岗</div></div>
+        </div>
+        <div class="clink">
+          <div><div class="k">EDUCATION</div><div class="v">青岛大学 · 2027 届 · GPA 3.55/4.0</div></div>
+        </div>
+      </div>
+
+      <footer>
+        <span>© 2026 赵旭 · Forward Deployed Engineer</span>
+        <span class="r">STATUS: OPEN TO OFFER</span>
+      </footer>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------------- theme ---------------- */
+  var root = document.documentElement;
+  var saved = null;
+  try { saved = localStorage.getItem('fde-theme'); } catch(e){}
+  if (saved) root.setAttribute('data-theme', saved);
+  var meta = document.querySelector('meta[name="theme-color"]');
+  function syncMeta(){
+    if(!meta) return;
+    meta.setAttribute('content', root.getAttribute('data-theme')==='dark' ? '#08090b' : '#fafaf7');
+  }
+  syncMeta();
+  document.getElementById('themeBtn').addEventListener('click', function(){
+    var next = root.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('fde-theme', next); } catch(e){}
+    syncMeta();
+  });
+
+  /* ---------------- progress ---------------- */
+  var bar = document.getElementById('progress');
+  function onScroll(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  /* ---------------- reveal ---------------- */
+  var rvList = Array.prototype.slice.call(document.querySelectorAll('.rv'));
+  function sweep(){
+    var vh = window.innerHeight;
+    rvList.forEach(function(el){
+      if (el.getBoundingClientRect().top < vh * 0.94) el.classList.add('in');
+    });
+  }
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, {threshold:0.05, rootMargin:'0px 0px -30px 0px'});
+    rvList.forEach(function(el){ io.observe(el); });
+  } else {
+    rvList.forEach(function(el){ el.classList.add('in'); });
+  }
+  window.addEventListener('load', function(){ setTimeout(sweep, 50); });
+  window.addEventListener('hashchange', function(){ setTimeout(sweep, 420); });
+
+  /* ---------------- nav active ---------------- */
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('#topnav a'));
+  var secs = navLinks.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  function setActive(){
+    var y = window.scrollY + window.innerHeight * 0.3;
+    var idx = 0;
+    secs.forEach(function(s,i){ if (s && s.offsetTop <= y) idx = i; });
+    navLinks.forEach(function(a,i){ a.classList.toggle('active', i === idx); });
+  }
+  window.addEventListener('scroll', setActive, {passive:true});
+  setActive();
+
+  /* ---------------- card glow ---------------- */
+  Array.prototype.forEach.call(document.querySelectorAll('.sys'), function(card){
+    card.addEventListener('mousemove', function(e){
+      var r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+
+  /* ---------------- competency bar ---------------- */
+  var barEl = document.getElementById('mapBar');
+  var numEl = document.getElementById('mapNum');
+  var caps = document.querySelectorAll('.cap');
+  var total = caps.length, done = 0, wip = 0;
+  Array.prototype.forEach.call(caps, function(c){
+    if (c.classList.contains('done')) done++;
+    else if (c.classList.contains('wip')) wip++;
+  });
+  var pct = Math.round(done / total * 100);
+  document.getElementById('mapWip').textContent = wip;
+  var mapSeen = false;
+  function runMap(){
+    if (mapSeen) return;
+    var box = document.getElementById('map');
+    if (!box) return;
+    if (box.getBoundingClientRect().top < window.innerHeight * 0.85) {
+      mapSeen = true;
+      barEl.style.width = pct + '%';
+      document.getElementById('mapBar2').style.width = Math.round(wip / total * 100) + '%';
+      var n = 0;
+      var timer = setInterval(function(){
+        n += 1;
+        if (n >= done) { n = done; clearInterval(timer); }
+        numEl.textContent = n;
+      }, 60);
+    }
+  }
+  window.addEventListener('scroll', runMap, {passive:true});
+  window.addEventListener('load', function(){ setTimeout(runMap, 300); });
+
+  /* ---------------- mail menu ---------------- */
+  var EMAIL = '2210914541@qq.com';
+  var mailBtn = document.getElementById('mailBtn');
+  var mailMenu = document.getElementById('mailMenu');
+  var SUBJ = encodeURIComponent('关于 FDE 岗位的交流');
+  var MAIL = {
+    qq: 'https://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=' + EMAIL,
+    '163': 'https://mail.163.com/',
+    '126': 'https://mail.126.com/',
+    gmail: 'https://mail.google.com/mail/?view=cm&fs=1&to=' + EMAIL + '&su=' + SUBJ,
+    outlook: 'https://outlook.live.com/mail/0/deeplink/compose?to=' + EMAIL + '&subject=' + SUBJ,
+    'default': 'mailto:' + EMAIL + '?subject=' + SUBJ
+  };
+  function closeMenu(){
+    mailMenu.classList.remove('open');
+    mailBtn.setAttribute('aria-expanded','false');
+  }
+  mailBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    var open = mailMenu.classList.toggle('open');
+    mailBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  mailMenu.addEventListener('click', function(e){
+    var b = e.target.closest('button[data-mail]');
+    if (!b) return;
+    var k = b.getAttribute('data-mail');
+    if (k === 'copy') {
+      var done = function(){
+        b.childNodes[0].nodeValue = '已复制 ';
+        setTimeout(function(){ b.childNodes[0].nodeValue = '复制邮箱地址 '; closeMenu(); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(EMAIL).then(done, done);
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = EMAIL; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch(err){}
+        document.body.removeChild(ta); done();
+      }
+      return;
+    }
+    if (MAIL[k]) window.open(MAIL[k], '_blank', 'noopener');
+    closeMenu();
+  });
+  document.addEventListener('click', function(e){
+    if (!e.target.closest('.mailwrap')) closeMenu();
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeMenu();
+    if (e.key === 't' || e.key === 'T') {
+      if (document.activeElement && /input|textarea/i.test(document.activeElement.tagName)) return;
+      document.getElementById('themeBtn').click();
+    }
+  });
+
+  /* ============================================================
+     FIELD CONSOLE
+     ============================================================ */
+  var SCEN = [
+    {
+      id:'schedule', label:'制造排产',
+      name:'家电产线 · 换型排产',
+      rows:[
+        ['SIGNAL','「换一次线停 3 小时，计划员靠 Excel 手工排」'],
+        ['PROCESS','订单池 → 产能校验 → 模具切换 → 物料齐套 → 排程下发'],
+        ['DATA','订单（ERP）/ 设备状态（SCADA）/ 物料齐套（WMS）/ 历史排程（Excel）'],
+        ['CUT','① 换型时间预测　② 齐套风险预警　③ 排程建议（人在环）'],
+        ['METRIC','换型停机时长 ↓　计划调整次数 ↓　齐套延误率 ↓'],
+        ['RISK','设备数据不出域 → 本地小模型；排程建议必须人工确认后才下发'],
+        ['GATE','首版用 30 条历史订单回放，命中 ≥ 85% 才允许进灰度'],
+        ['FIRST','先只做「齐套风险预警」——它不改任何系统状态，最容易拿到信任']
+      ]
+    },
+    {
+      id:'bid', label:'大客户投标',
+      name:'大客户 · 报价到交付',
+      rows:[
+        ['SIGNAL','「报价到交付，中间十几个人在传 Excel」'],
+        ['PROCESS','需求确认 → 方案报价 → 内部审批 → 合同 → 排产 → 物流 → 验收'],
+        ['DATA','CRM 商机 / 历史报价单 / 物料成本表 / 物流单号 / 验收记录'],
+        ['CUT','① 历史报价检索　② 成本偏差预警　③ 交付进度自动追踪'],
+        ['METRIC','报价周期 ↓　交付延期次数 ↓　人工跟单工时 ↓'],
+        ['RISK','报价与成本是敏感数据，检索层必须做字段级权限；审批流不能省'],
+        ['GATE','用过去 20 个已成交项目做回放，报价区间命中 ≥ 80% 才上线'],
+        ['FIRST','先做交付进度追踪——数据源清楚、价值可见、不碰审批权']
+      ]
+    },
+    {
+      id:'logi', label:'供应链物流',
+      name:'供应链 · 在途追踪',
+      rows:[
+        ['SIGNAL','「货在哪，得一个个打电话问」'],
+        ['PROCESS','出库 → 承运商揽收 → 干线 → 中转 → 末端 → 签收'],
+        ['DATA','TMS 运单 / 承运商 API（格式各家不同）/ 司机上报 / 签收单'],
+        ['CUT','① 异常件自动识别　② 到货时间预测　③ 客户侧进度推送'],
+        ['METRIC','异常发现时长 ↓　催单电话量 ↓　到货预测误差 ↓'],
+        ['RISK','承运商接口不稳定且格式不统一，接入层要做适配与重试，不能假设接口可靠'],
+        ['GATE','连续 2 周与人工核对，异常识别准确率 ≥ 90% 才算可用'],
+        ['FIRST','先接 1 家承运商做通，再谈统一接入——一上来全接必然失败']
+      ]
+    },
+    {
+      id:'dist', label:'渠道分销',
+      name:'渠道 · 进销存与选品',
+      rows:[
+        ['SIGNAL','「卖得动，但不知道下个月该进多少货」'],
+        ['PROCESS','选品 → 进货 → 分销 → 活动 → 复购'],
+        ['DATA','销售流水 / 库存表 / 活动记录 / 复购明细（多为 Excel，口径不一）'],
+        ['CUT','① 口径统一　② 补货建议　③ 选品评分'],
+        ['METRIC','缺货率 ↓　滞销库存 ↓　单月销售额 ↑'],
+        ['RISK','五个经销商的「一箱」定义都不一样。不统一口径，任何模型输出都是噪音'],
+        ['GATE','先用 3 个月历史数据回测，补货建议的缺货率要低于人工基线'],
+        ['FIRST','第一步不是建模，是把三张表的口径写成文档并让所有人签字']
+      ]
+    }
+  ];
+
+  var CORPUS = [
+    {src:'项目 · Multi-Agent Code Studio', kw:['评测','评估','judge','icc','一致性','质量','代码','门控','闸门','归因'],
+     text:'五维加权评估 + <b>ICC 一致性检验</b> + 质量门控，形成「评测 → 归因 → 优化」闭环。评委间一致性不达标就重定义评分维度。'},
+    {src:'项目 · GEO Optimizer', kw:['geo','搜索','引用','内容','评分','营销','维度','校准'],
+     text:'6 维度 GEO 评分模型 + 五维加权 + ICC 校准，输出可执行的改写建议，而不是一个总分。FastAPI 服务化。'},
+    {src:'项目 · 高考择校问答', kw:['全栈','fastapi','上线','用户','埋点','问答','调研','产品'],
+     text:'Python / FastAPI 全栈上线，服务 <b>200+ 用户</b>，埋行为数据驱动迭代，获省级创新创业立项。'},
+    {src:'项目 · 跨境筛货 Agent', kw:['agent','workflow','编排','自动化','prompt','流程','受控'],
+     text:'拆成「采集 → 筛选 → 内容生成 → 上架」四步受控工作流。放弃全自动 Agent 选状态机，因为验收标准是「不出错」。'},
+    {src:'经历 · 海信大客户', kw:['海信','大客户','现场','交付','客户','实习','轮岗','项目'],
+     text:'在大客户 BU / GTM / 供应链三部门轮岗，参与胶东机场、青岛地铁等<b>总额超千万元</b>项目，把一线痛点转成 AI 场景需求。'},
+    {src:'经历 · 校园分销网络', kw:['分销','渠道','创业','流水','社群','销售','库存','复购'],
+     text:'从 0 搭起 <b>500+ 人</b>推广社群，年流水 50 万+。用 Excel + Python 监控销售/库存/复购，单月销售额提升 40%。'},
+    {src:'经历 · 省级大创', kw:['大创','工业','产线','制造','工艺','成本','约束','纤维'],
+     text:'聚乳酸改性耐高温纤维，走完原料价格 → 改性工艺 → 测试标准 → 商业化成本整条工业化链。四段约束互相牵制。'},
+    {src:'能力 · 评测体系', kw:['评测','样本','回归','gate','闸门','threshold','min_cases','标注'],
+     text:'现场修正即标注；样本库 + 全量回归；<b>threshold + min_cases 双闸门</b>，样本不足不放行。'},
+    {src:'能力 · RAG', kw:['rag','检索','向量','召回','重排','切分','embedding','引用','知识'],
+     text:'切分策略、混合召回（向量 + 关键词）、重排、引用溯源。答案必须能点回原文。目前在做，未到生产级。'},
+    {src:'能力 · 可观测', kw:['可观测','trace','span','otel','opentelemetry','延迟','成本','监控','日志'],
+     text:'按 OpenTelemetry GenAI 语义约定埋 span，让模型调用、token、延迟进入客户已有 Jaeger / Datadog。目前在做。'},
+    {src:'能力 · 数据接入', kw:['数据','接入','etl','sql','口径','清洗','增量','幂等','源系统'],
+     text:'源系统盘点、口径对齐、增量与幂等写入、脏数据处理。SQL 与 Python 熟练；生产级 ETL 与血缘还在补。'},
+    {src:'能力 · 权限与合规', kw:['权限','合规','pii','私有化','审批','安全','脱敏','护栏'],
+     text:'mutating 工具必须在代码层强制人工审批，不能靠 prompt 约束；PII 护栏放在入口而不是出口。'},
+    {src:'能力 · 部署纪律', kw:['docker','k8s','部署','灰度','回滚','ci','容器','运维','linux'],
+     text:'容器化、CI/CD、影子流量、按比例放量、一键回滚。这是目前<b>最大的缺口</b>，正在用个人项目补。'},
+    {src:'开源 · squeeze', kw:['squeeze','压缩','上下文','token','省','cli'],
+     text:'上下文压缩 CLI，实测节省 <b>60–87%</b> token。解决长会话上下文成本问题。'},
+    {src:'开源 · llm-as-judge', kw:['judge','评委','icc','一致性','评分','开源'],
+     text:'多评委评分 + ICC 组内相关系数一致性检验，单评委有偏时的标准解法。'},
+    {src:'开源 · depmap', kw:['depmap','依赖','模块','python','图','静态'],
+     text:'Python 模块依赖图工具，零依赖，用于快速理解陌生代码库结构——进现场读别人代码时很有用。'},
+    {src:'定位 · 为什么做 FDE', kw:['为什么','fde','方向','选择','职业','动机','转'],
+     text:'我关心的不是 AI 能做什么，而是它能替谁的<b>哪一步</b>省掉时间。FDE 是这个判断能直接兑现的岗位。'},
+    {src:'定位 · 短板', kw:['短板','不足','缺','学习','补','弱'],
+     text:'生产工程纪律是最大缺口：容器化、可观测、灰度回滚还没在真实客户环境跑过。路线图里 P2 专门补这块。'}
+  ];
+
+  var body = document.getElementById('cBody');
+  var mode = 'diagnose';
+  var currentScen = 0;
+
+  function esc(s){ return s; }
+
+  function renderDiagnose(){
+    var s = SCEN[currentScen];
+    var html = '<div class="scen-bar">';
+    SCEN.forEach(function(x,i){
+      html += '<button data-scen="' + i + '"' + (i === currentScen ? ' class="on"' : '') + '>' + x.label + '</button>';
+    });
+    html += '</div><div class="out">';
+    html += '<div class="row" style="animation-delay:0s"><span class="rk">SCENARIO</span><span class="rv"><b>' + s.name + '</b></span></div>';
+    s.rows.forEach(function(r,i){
+      var cls = '';
+      if (r[0] === 'GATE' || r[0] === 'RISK') cls = ' class="rv"';
+      var v = r[1];
+      if (r[0] === 'GATE') v = '<span class="hi">' + v + '</span>';
+      if (r[0] === 'RISK') v = '<span class="wn">' + v + '</span>';
+      if (r[0] === 'FIRST') v = '<b>' + v + '</b>';
+      html += '<div class="row" style="animation-delay:' + ((i+1)*0.055).toFixed(2) + 's"><span class="rk">' + r[0] + '</span><span class="rv">' + v + '</span></div>';
+    });
+    html += '</div>';
+    body.innerHTML = html;
+    Array.prototype.forEach.call(body.querySelectorAll('[data-scen]'), function(b){
+      b.addEventListener('click', function(){
+        currentScen = parseInt(b.getAttribute('data-scen'), 10);
+        renderDiagnose();
+      });
+    });
+  }
+
+  var CHIPS = ['你做过评测体系吗','RAG 到什么程度','怎么保证数据不出域','最大的短板是什么','为什么想做 FDE'];
+
+  function scoreDoc(q, doc){
+    var s = 0, hits = 0;
+    var ql = q.toLowerCase();
+    doc.kw.forEach(function(k){
+      if (ql.indexOf(k.toLowerCase()) !== -1) { s += 1.6; hits++; }
+    });
+    // 字符重叠（中文按字）
+    var qc = {};
+    for (var i = 0; i < ql.length; i++) { var ch = ql[i]; if (/[\u4e00-\u9fa5a-z0-9]/.test(ch)) qc[ch] = 1; }
+    var plain = doc.text.replace(/<[^>]+>/g, '');
+    var ov = 0;
+    for (var c in qc) { if (plain.toLowerCase().indexOf(c) !== -1) ov++; }
+    var total = Object.keys(qc).length || 1;
+    s += (ov / total) * 1.2;
+    return { s: s, hits: hits };
+  }
+
+  function renderRetrieve(q){
+    var html = '<div class="search-row">'
+      + '<input id="rq" type="text" placeholder="问点什么，比如：评测 / RAG / 数据接入" value="' + (q || '').replace(/"/g,'&quot;') + '" />'
+      + '<button id="rgo">检索</button></div>';
+    html += '<div class="chips">';
+    CHIPS.forEach(function(c){ html += '<button data-q="' + c + '">' + c + '</button>'; });
+    html += '</div>';
+
+    if (!q) {
+      html += '<div class="empty">输入关键词，从 18 条语料里检索。这是我自己写的规则打分，不是真模型。</div>';
+    } else {
+      var res = CORPUS.map(function(d){
+        var r = scoreDoc(q, d);
+        return { d: d, s: r.s, h: r.hits };
+      }).filter(function(x){ return x.h > 0 || x.s > 0.9; })
+        .sort(function(a,b){ return b.s - a.s; })
+        .slice(0, 3);
+
+      if (!res.length) {
+        html += '<div class="empty">没有命中。试试：评测 / 检索 / 部署 / 短板</div>';
+      } else {
+        var max = res[0].s || 1;
+        res.forEach(function(x, i){
+          var sc = Math.min(0.97, 0.55 + (x.s / max) * 0.42 - i * 0.05);
+          html += '<div class="hit" style="animation-delay:' + (i*0.07).toFixed(2) + 's">'
+            + '<div class="hit-h"><span class="hit-score">' + sc.toFixed(2) + '</span>'
+            + '<span class="hit-src">' + x.d.src + '</span></div>'
+            + '<div class="hit-t">' + x.d.text + '</div></div>';
+        });
+      }
+    }
+    body.innerHTML = html;
+
+    var input = document.getElementById('rq');
+    var go = document.getElementById('rgo');
+    function submit(){
+      var v = input.value.trim();
+      renderRetrieve(v);
+      var ni = document.getElementById('rq');
+      if (ni) { ni.focus(); ni.setSelectionRange(ni.value.length, ni.value.length); }
+    }
+    go.addEventListener('click', submit);
+    input.addEventListener('keydown', function(e){ if (e.key === 'Enter') submit(); });
+    Array.prototype.forEach.call(body.querySelectorAll('[data-q]'), function(b){
+      b.addEventListener('click', function(){ renderRetrieve(b.getAttribute('data-q')); });
+    });
+  }
+
+  function render(){
+    if (mode === 'diagnose') renderDiagnose();
+    else renderRetrieve('');
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(b){
+    b.addEventListener('click', function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      mode = b.getAttribute('data-mode');
+      render();
+    });
+  });
+
+  render();
+
+})();
+</script>
+
+</body>
+</html>
