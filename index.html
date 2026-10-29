@@ -513,6 +513,12 @@ html[data-theme="light"] .c-tag{color:#9aa2ad}
 .os-item .ds{font-size:13px;color:var(--muted)}
 .os-item .go{font-family:var(--mono);font-size:11px;color:var(--faint);transition:color .15s}
 .os-item:hover .go{color:var(--accent)}
+.os-lead{font-size:13.5px;color:var(--muted);line-height:1.85;margin:0 0 4px;max-width:820px}
+.os-lead b{color:var(--text);font-weight:600}
+.os-lead code{font-family:var(--mono);font-size:.92em;color:var(--accent);background:var(--accent-dim);border-radius:3px;padding:1px 5px}
+.os-cat{display:flex;align-items:center;gap:10px;margin:20px 0 2px;font-family:var(--mono);font-size:10px;letter-spacing:.09em;color:var(--faint);text-transform:uppercase}
+.os-cat em{font-style:normal;font-size:9px;color:var(--accent);border:1px solid var(--line-2);border-radius:3px;padding:0 4px;line-height:1.5}
+.os-cat i{flex:1;height:1px;background:var(--line)}
 
 /* ============================================================
    COMPETENCY MAP
@@ -1189,24 +1195,80 @@ footer .r{margin-left:auto}
     </div>
 
     <div class="os-list rv">
-      <div class="h"><span>开源 / 工具</span><i></i><span>GITHUB</span></div>
-      <a class="os-item" href="https://github.com/z15346183030/squeeze" target="_blank" rel="noopener">
-        <span class="nm">squeeze</span><span class="ds">上下文压缩 CLI，实测省 60–87% token</span><span class="go">↗</span>
-      </a>
-      <a class="os-item" href="https://github.com/z15346183030/llm-as-judge" target="_blank" rel="noopener">
-        <span class="nm">llm-as-judge</span><span class="ds">多评委评分 + ICC 一致性检验</span><span class="go">↗</span>
-      </a>
+      <div class="h"><span>工具链 / 15 个零依赖工具 + 6 个长期项目</span><i></i><span>21,700 行 · 0 依赖</span></div>
+      <p class="os-lead">客户现场的第一条约束，往往不是「用什么模型」，是<b>这台机器装不了东西</b>。内网、锁死的 CI、只读镜像、连 <code>pip</code> 都不通的时候，能用的工具只能是一个文件。这 15 个都是这么长出来的——不是练手，是每次被环境卡住之后写下来的解法。每个都带测试：1.35 万行工具代码配 0.81 万行测试。</p>
+
+      <div class="os-cat"><span>进场：读懂陌生代码</span><em>4</em><i></i></div>
       <a class="os-item" href="https://github.com/z15346183030/depmap" target="_blank" rel="noopener">
-        <span class="nm">depmap</span><span class="ds">Python 模块依赖图，零依赖</span><span class="go">↗</span>
+        <span class="nm">depmap</span><span class="ds">接手陌生代码库，先看模块依赖图、循环依赖和死代码</span><span class="go">↗</span>
       </a>
-      <a class="os-item" href="https://github.com/z15346183030/reverse-engineer-for-everything" target="_blank" rel="noopener">
-        <span class="nm">reverse-engineer-for-everything</span><span class="ds">软件逆向工具箱，带证据链</span><span class="go">↗</span>
+      <a class="os-item" href="https://github.com/z15346183030/astdiff" target="_blank" rel="noopener">
+        <span class="nm">astdiff</span><span class="ds">按语法树比对，分得清「只是重构」和「真的改了逻辑」</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/shapefind" target="_blank" rel="noopener">
+        <span class="nm">shapefind</span><span class="ds">找「所有调用点」，grep 会漏注释也会多命中字符串</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/copyfind" target="_blank" rel="noopener">
+        <span class="nm">copyfind</span><span class="ds">同一段逻辑粘了 12 份，只报 1 条并列出全部位置</span><span class="go">↗</span>
+      </a>
+
+      <div class="os-cat"><span>交付：文档与发布</span><em>3</em><i></i></div>
+      <a class="os-item" href="https://github.com/z15346183030/doc2md" target="_blank" rel="noopener">
+        <span class="nm">doc2md</span><span class="ds">客户只给 Word / Excel，而那台机器装不了任何包</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/mddeck" target="_blank" rel="noopener">
+        <span class="nm">mddeck</span><span class="ds">离线演示：不装 Node、不拉 Chrome，构建时就量好每页排版</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/commitlog" target="_blank" rel="noopener">
+        <span class="nm">commitlog</span><span class="ds">交接时给客户的变更说明，从提交历史直接生成，顺带算版本号</span><span class="go">↗</span>
+      </a>
+
+      <div class="os-cat"><span>数据与配置：不敢手改的东西</span><em>3</em><i></i></div>
+      <a class="os-item" href="https://github.com/z15346183030/csvsift" target="_blank" rel="noopener">
+        <span class="nm">csvsift</span><span class="ds">客户导出的 CSV 字段很脏，但值一个字符都不能被「智能」改写</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/yamlsplice" target="_blank" rel="noopener">
+        <span class="nm">yamlsplice</span><span class="ds">改一行配置，diff 不该冒出四十行——只动那几个字节</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/squeeze" target="_blank" rel="noopener">
+        <span class="nm">squeeze</span><span class="ds">日志太长塞不进上下文，省 60–87%，但错误行一条都不丢</span><span class="go">↗</span>
+      </a>
+
+      <div class="os-cat"><span>上线前的闸门</span><em>5</em><i></i></div>
+      <a class="os-item" href="https://github.com/z15346183030/leakcheck" target="_blank" rel="noopener">
+        <span class="nm">leakcheck</span><span class="ds">扫硬编码密钥，按形状 + 键名 + 上下文打分，每条给证据链</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/linkcheck" target="_blank" rel="noopener">
+        <span class="nm">linkcheck</span><span class="ds">文档交接前跑一遍，只报真坏的死链，代码块里的假链接不算</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/spellcode" target="_blank" rel="noopener">
+        <span class="nm">spellcode</span><span class="ds">代码里的错拼 CI 不拦、人眼也扫不出来，三层判断只报有把握的</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/pngslim" target="_blank" rel="noopener">
+        <span class="nm">pngslim</span><span class="ds">交付物里的图太大，但像素一个都不能动，写回前逐行比对</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/benchloop" target="_blank" rel="noopener">
+        <span class="nm">benchloop</span><span class="ds">「优化完快了多少」要有 95% 置信区间，不能只看跑一次</span><span class="go">↗</span>
+      </a>
+
+      <div class="os-cat"><span>AI 与长期项目</span><em>6</em><i></i></div>
+      <a class="os-item" href="https://github.com/z15346183030/llm-as-judge" target="_blank" rel="noopener">
+        <span class="nm">llm-as-judge</span><span class="ds">多评委评分 + ICC 一致性检验，评委不可信就先不采信分数</span><span class="go">↗</span>
       </a>
       <a class="os-item" href="https://github.com/z15346183030/prompt-playground" target="_blank" rel="noopener">
-        <span class="nm">prompt-playground</span><span class="ds">纯前端 Prompt 测试台</span><span class="go">↗</span>
+        <span class="nm">prompt-playground</span><span class="ds">纯前端 Prompt 测试台，改完立刻看差异</span><span class="go">↗</span>
       </a>
       <a class="os-item" href="https://github.com/z15346183030/daily-forge" target="_blank" rel="noopener">
-        <span class="nm">daily-forge</span><span class="ds">每天复刻一个千星项目</span><span class="go">↗</span>
+        <span class="nm">daily-forge</span><span class="ds">每天拆解一个千星项目，保持手速与判断</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/reverse-engineer-for-everything" target="_blank" rel="noopener">
+        <span class="nm">reverse-engineer-for-everything</span><span class="ds">软件逆向工具箱，每一步都留证据链</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/reverse-lab" target="_blank" rel="noopener">
+        <span class="nm">reverse-lab</span><span class="ds">高星项目架构研报 + 源码解析 + 最小复刻</span><span class="go">↗</span>
+      </a>
+      <a class="os-item" href="https://github.com/z15346183030/awesome-agentic-commerce" target="_blank" rel="noopener">
+        <span class="nm">awesome-agentic-commerce</span><span class="ds">Agentic commerce 协议资源集：UCP / ACP / AP2 / MCP</span><span class="go">↗</span>
       </a>
     </div>
   </div>
